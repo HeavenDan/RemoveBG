@@ -297,13 +297,13 @@ export default function Home() {
                     onMouseMove={handleMouseMove}
                     onMouseUp={stopDrawing}
                     onMouseLeave={stopDrawing}
-                    style={{ maxWidth: '100%', height: 'auto', display: 'block', cursor: isPanning ? 'grabbing' : 'crosshair' }}
+                    style={{ height: 'auto', display: 'block', cursor: isPanning ? 'grabbing' : 'crosshair' }}
                   />
                 </div>
               ) : result ? (
-                <img src={result} alt="Result" style={{ maxWidth: '100%', height: 'auto', display: 'block' }} />
+                <img src={result} alt="Result" style={{ height: 'auto', display: 'block' }} />
               ) : preview ? (
-                <img src={preview} alt="Preview" style={{ maxWidth: '100%', height: 'auto', display: 'block', opacity: 0.7 }} />
+                <img src={preview} alt="Preview" style={{ height: 'auto', display: 'block', opacity: 0.7 }} />
               ) : (
                 <span style={{ color: '#6b7280' }}>No image</span>
               )}
