@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import FormData from 'form-data'
-import fetch from 'node-fetch'
 
 export async function POST(req: NextRequest) {
   try {
@@ -26,8 +25,11 @@ export async function POST(req: NextRequest) {
     }
 
     const headers = { ...form.getHeaders(), 'X-Api-Key': apiKey }
+    
+    // Используем глобальный fetch (встроенный в Node 18+)
     const r = await fetch('https://api.remove.bg/v1.0/removebg', {
       method: 'POST',
+      // @ts-ignore - FormData from form-data library compatible with fetch
       headers,
       body: form
     })
@@ -43,6 +45,7 @@ export async function POST(req: NextRequest) {
       headers: { 'Content-Type': 'image/png' }
     })
   } catch (e) {
+    console.error('API Error:', e)
     return NextResponse.json({ error: 'Server error' }, { status: 500 })
   }
 }
