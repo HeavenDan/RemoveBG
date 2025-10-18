@@ -12,7 +12,7 @@ const upload = multer({ limits: { fileSize: 15 * 1024 * 1024 } })
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
-app.use(express.static(path.join(__dirname, 'public')))
+app.use(express.static(__dirname))
 
 app.post('/api/remove-bg', upload.single('file'), async (req, res) => {
   try {
