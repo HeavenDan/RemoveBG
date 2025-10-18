@@ -14,7 +14,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Server misconfigured: REMOVEBG_KEY missing' }, { status: 500 })
     }
 
-    // Создаём новый FormData для отправки в Remove.bg API
     const apiFormData = new FormData()
     apiFormData.append('image_file', file)
     apiFormData.append('size', 'preview')
