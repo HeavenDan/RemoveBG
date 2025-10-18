@@ -249,7 +249,7 @@ export default function Home() {
                     <button onClick={() => setZoom(prev => Math.min(prev + 0.25, 5))} style={{ padding: '8px 12px', border: 0, borderRadius: '6px', background: '#1e2748', color: 'white', fontWeight: 600, cursor: 'pointer', fontSize: '14px' }}>+</button>
                     <button onClick={resetZoom} style={{ padding: '8px 12px', border: 0, borderRadius: '6px', background: '#1e2748', color: 'white', fontWeight: 600, cursor: 'pointer', fontSize: '12px' }}>Reset</button>
                   </div>
-                  <p style={{ fontSize: '12px', color: '#6b7280', margin: '8px 0 0', lineHeight: '1.4' }}>💡 Scroll to zoom, hold Shift to pan or erase/restore</p>
+                  <p style={{ fontSize: '12px', color: '#6b7280', margin: '8px 0 0', lineHeight: '1.4' }}>💡 Hold Shift + move/scroll</p>
                 </div>
                 <div style={{ marginBottom: '12px' }}>
                   <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', color: '#aab3c5' }}>Brush Size: {brushSize}px</label>
