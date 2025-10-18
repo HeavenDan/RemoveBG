@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import FormData from 'form-data'
 
 export async function POST(req: NextRequest) {
   try {
@@ -10,28 +9,22 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'No file' }, { status: 400 })
     }
 
-    const buffer = Buffer.from(await file.arrayBuffer())
-    
-    const form = new FormData()
-    form.append('image_file', buffer, {
-      filename: file.name,
-      contentType: file.type
-    })
-    form.append('size', 'preview')
-
     const apiKey = (process.env.REMOVEBG_KEY || '').trim()
     if (!apiKey) {
       return NextResponse.json({ error: 'Server misconfigured: REMOVEBG_KEY missing' }, { status: 500 })
     }
 
-    const headers = { ...form.getHeaders(), 'X-Api-Key': apiKey }
-    
-    // Используем глобальный fetch (встроенный в Node 18+)
+    // Создаём новый FormData для отправки в Remove.bg API
+    const apiFormData = new FormData()
+    apiFormData.append('image_file', file)
+    apiFormData.append('size', 'preview')
+
     const r = await fetch('https://api.remove.bg/v1.0/removebg', {
       method: 'POST',
-      // @ts-ignore - FormData from form-data library compatible with fetch
-      headers,
-      body: form
+      headers: {
+        'X-Api-Key': apiKey
+      },
+      body: apiFormData
     })
 
     if (!r.ok) {
@@ -49,4 +42,3 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Server error' }, { status: 500 })
   }
 }
-
