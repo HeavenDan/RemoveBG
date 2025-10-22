@@ -267,7 +267,7 @@ export default function Home() {
   }
 
   return (
-    <div className="main-container" style={{ fontFamily: 'system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,"Noto Sans",sans-serif', margin: 0, background: '#0b1021', color: '#e7e9ee', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', minHeight: '100dvh', padding: '32px' }}>
+    <div className="main-container" style={{ fontFamily: 'system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,"Noto Sans",sans-serif', margin: 0, background: '#0b1021', color: '#e7e9ee', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100dvh', padding: '32px' }}>
       <div className="card-container" style={{ width: '100%', maxWidth: '1000px', background: '#121832', border: '1px solid #1e2748', borderRadius: '16px', boxShadow: '0 10px 30px rgba(0,0,0,.35)', padding: '32px' }}>
         <h1 style={{ fontSize: '28px', margin: '0 0 12px' }}>Remove background</h1>
         <p style={{ margin: '0 0 24px', color: '#aab3c5', fontSize: '15px' }}>Upload an image and get a transparent PNG.</p>
