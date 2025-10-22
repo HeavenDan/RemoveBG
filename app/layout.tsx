@@ -10,6 +10,9 @@ export const viewport = {
   userScalable: true,
 }
 
+import PHProvider from './ph-provider'
+import { Analytics } from '@vercel/analytics/react'
+
 export default function RootLayout({
   children,
 }: {
@@ -74,7 +77,10 @@ export default function RootLayout({
           }
         `}</style>
       </head>
-      <body>{children}</body>
+      <body>
+        <PHProvider>{children}</PHProvider>
+        <Analytics />
+      </body>
     </html>
   )
 }

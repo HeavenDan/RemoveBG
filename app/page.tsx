@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, FormEvent, useRef, useEffect } from 'react'
+import posthog from 'posthog-js'
 
 export default function Home() {
   const [file, setFile] = useState<File | null>(null)
@@ -39,16 +40,44 @@ export default function Home() {
     setEditMode(false)
 
     try {
+      const t0 = performance.now()
+      if (process.env.NODE_ENV === 'production') {
+        posthog.capture('upload_started', {
+          mode: 'preview',
+          mime: file.type,
+          size_kb: Math.round(file.size / 1024),
+          deviceMemory: (navigator as any).deviceMemory || null,
+          userAgent: navigator.userAgent,
+          viewport: { w: window.innerWidth, h: window.innerHeight },
+          is_mobile: /Mobi|Android/i.test(navigator.userAgent)
+        })
+      }
       const fd = new FormData()
       fd.append('file', file)
       const r = await fetch('/api/remove-bg', { method: 'POST', body: fd })
       if (!r.ok) {
         const t = await r.text()
+        if (process.env.NODE_ENV === 'production') {
+          const t1 = performance.now()
+          posthog.capture('upload_failed', {
+            stage: 'api',
+            error: t || 'Request failed',
+            duration_ms: Math.round(t1 - t0)
+          })
+        }
         throw new Error(t || 'Request failed')
       }
       const blob = await r.blob()
       const url = URL.createObjectURL(blob)
       setResult(url)
+      if (process.env.NODE_ENV === 'production') {
+        const t1 = performance.now()
+        posthog.capture('upload_succeeded', {
+          mode: 'api',
+          engine: 'api',
+          duration_ms: Math.round(t1 - t0)
+        })
+      }
     } catch (err: any) {
       setError('Error: ' + (err?.message || 'Unknown'))
     } finally {
@@ -283,6 +312,9 @@ export default function Home() {
 
   const handleDownload = () => {
     if (!result) return
+    if (process.env.NODE_ENV === 'production') {
+      posthog.capture('download_clicked')
+    }
     
     fetch(result)
       .then(res => res.blob())
