@@ -3,8 +3,10 @@
 import { useState, FormEvent, useRef, useEffect } from 'react'
 import posthog from 'posthog-js'
 import KoFiInlineButton from './components/KoFiInlineButton'
+import { useIsMobile } from './useIsMobile'
 
 export default function Home() {
+  const isMobile = useIsMobile(768)
   const [file, setFile] = useState<File | null>(null)
   const [preview, setPreview] = useState<string | null>(null)
   const [result, setResult] = useState<string | null>(null)
@@ -423,7 +425,7 @@ export default function Home() {
                   </div>
                 )}
               </div>
-              <div style={{ marginTop: 'auto' }}>
+              <div className="desktop-only" style={{ marginTop: 'auto' }}>
                 <KoFiInlineButton />
               </div>
             </div>
@@ -457,6 +459,9 @@ export default function Home() {
               ) : (
                 <span style={{ color: '#6b7280' }}>No image</span>
               )}
+            </div>
+            <div className="mobile-only" style={{ marginTop: '12px' }}>
+              <KoFiInlineButton />
             </div>
           </div>
         </div>

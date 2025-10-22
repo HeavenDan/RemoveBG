@@ -26,6 +26,9 @@ export default function RootLayout({
             box-sizing: border-box;
           }
           
+          .mobile-only { display: none; }
+          .desktop-only { display: block; }
+
           html, body {
             margin: 0;
             padding: 0;
@@ -35,6 +38,9 @@ export default function RootLayout({
           }
           
           @media (max-width: 768px) {
+            .desktop-only { display: none !important; }
+            .mobile-only { display: block !important; }
+
             .main-container {
               padding: 16px !important;
             }
