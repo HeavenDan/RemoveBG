@@ -273,23 +273,25 @@ export default function Home() {
         <p style={{ margin: '0 0 24px', color: '#aab3c5', fontSize: '15px' }}>Upload an image and get a transparent PNG.</p>
         <div className="content-wrapper" style={{ display: 'flex', gap: '24px', flexWrap: 'wrap' }}>
           <div className="section" style={{ flex: 1, minWidth: '320px' }}>
-            <form onSubmit={handleSubmit}>
-              <div style={{ display: 'flex', gap: '12px', alignItems: 'stretch', flexDirection: 'column' }}>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleFileChange}
-                  style={{ padding: '12px', border: '1px dashed #33406b', borderRadius: '10px', background: '#0d1430', color: '#e7e9ee', fontSize: '14px' }}
-                />
-                <button type="submit" disabled={loading || editMode} style={{ padding: '14px 20px', border: 0, borderRadius: '10px', background: '#4f6af7', color: 'white', fontWeight: 600, cursor: (loading || editMode) ? 'not-allowed' : 'pointer', opacity: (loading || editMode) ? 0.6 : 1, fontSize: '15px' }}>
-                  {loading ? 'Processing...' : 'Remove'}
-                </button>
-              </div>
-            </form>
+            {!result && (
+              <form onSubmit={handleSubmit}>
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'stretch', flexDirection: 'column' }}>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    style={{ padding: '12px', border: '1px dashed #33406b', borderRadius: '10px', background: '#0d1430', color: '#e7e9ee', fontSize: '14px' }}
+                  />
+                  <button type="submit" disabled={loading || editMode} style={{ padding: '14px 20px', border: 0, borderRadius: '10px', background: '#4f6af7', color: 'white', fontWeight: 600, cursor: (loading || editMode) ? 'not-allowed' : 'pointer', opacity: (loading || editMode) ? 0.6 : 1, fontSize: '15px' }}>
+                    {loading ? 'Processing...' : 'Remove'}
+                  </button>
+                </div>
+              </form>
+            )}
             {error && <div style={{ color: '#ff6b6b', marginTop: '16px', fontSize: '14px' }}>{error}</div>}
             
             {result && !editMode && (
-              <div style={{ display: 'flex', gap: '12px', marginTop: '16px', flexDirection: 'column' }}>
+              <div style={{ display: 'flex', gap: '12px', flexDirection: 'column' }}>
                 <div style={{ display: 'flex', gap: '12px' }}>
                   <a href={result} download="no-bg.png" style={{ textDecoration: 'none', flex: 1 }}>
                     <button type="button" style={{ width: '100%', padding: '14px 20px', border: 0, borderRadius: '10px', background: '#4f6af7', color: 'white', fontWeight: 600, cursor: 'pointer', fontSize: '15px' }}>Download PNG</button>
@@ -301,7 +303,7 @@ export default function Home() {
             )}
 
             {editMode && (
-              <div style={{ marginTop: '16px', padding: '16px', background: '#0d1430', borderRadius: '10px', border: '1px solid #1e2748' }}>
+              <div style={{ padding: '16px', background: '#0d1430', borderRadius: '10px', border: '1px solid #1e2748' }}>
                 <div style={{ marginBottom: '12px' }}>
                   <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', color: '#aab3c5' }}>Zoom: {zoom.toFixed(1)}x</label>
                   <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
@@ -342,7 +344,7 @@ export default function Home() {
                     onClick={() => setBrushMode('restore')}
                     style={{ flex: 1, padding: '10px', border: 0, borderRadius: '8px', background: brushMode === 'restore' ? '#10b981' : '#1e2748', color: 'white', fontWeight: 600, cursor: 'pointer', fontSize: '14px' }}
                   >
-                    ↩️ Restore
+                    ↩️ Undo Erase
                   </button>
                 </div>
                 <div style={{ display: 'flex', gap: '8px' }}>
