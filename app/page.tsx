@@ -23,6 +23,7 @@ export default function Home() {
   const [panY, setPanY] = useState(0)
   const [isPanning, setIsPanning] = useState(false)
   const [panStart, setPanStart] = useState({ x: 0, y: 0 })
+  const [lastPinchDistance, setLastPinchDistance] = useState<number | null>(null)
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
@@ -129,18 +130,25 @@ export default function Home() {
     setZoom(prev => Math.min(Math.max(prev * delta, 0.5), 5))
   }
 
-  const draw = (e: React.MouseEvent<HTMLCanvasElement>) => {
+  const getCanvasCoordinates = (clientX: number, clientY: number) => {
+    if (!canvasRef.current) return null
+
+    const canvas = canvasRef.current
+    const rect = canvas.getBoundingClientRect()
+    const scaleX = canvas.width / rect.width
+    const scaleY = canvas.height / rect.height
+    const x = (clientX - rect.left) * scaleX
+    const y = (clientY - rect.top) * scaleY
+    
+    return { x, y }
+  }
+
+  const drawAtCoordinates = (x: number, y: number) => {
     if (!canvasRef.current) return
 
     const canvas = canvasRef.current
     const ctx = canvas.getContext('2d')
     if (!ctx) return
-
-    const rect = canvas.getBoundingClientRect()
-    const scaleX = canvas.width / rect.width
-    const scaleY = canvas.height / rect.height
-    const x = (e.clientX - rect.left) * scaleX
-    const y = (e.clientY - rect.top) * scaleY
 
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
     const data = imageData.data
@@ -173,6 +181,67 @@ export default function Home() {
     ctx.putImageData(imageData, 0, 0)
   }
 
+  const draw = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    const coords = getCanvasCoordinates(e.clientX, e.clientY)
+    if (!coords) return
+    drawAtCoordinates(coords.x, coords.y)
+  }
+
+  const getTouchDistance = (touch1: React.Touch, touch2: React.Touch) => {
+    const dx = touch1.clientX - touch2.clientX
+    const dy = touch1.clientY - touch2.clientY
+    return Math.sqrt(dx * dx + dy * dy)
+  }
+
+  const startTouchDrawing = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    e.preventDefault()
+    if (e.touches.length === 1) {
+      setIsDrawing(true)
+      const touch = e.touches[0]
+      const coords = getCanvasCoordinates(touch.clientX, touch.clientY)
+      if (coords) drawAtCoordinates(coords.x, coords.y)
+    } else if (e.touches.length === 2) {
+      setIsDrawing(false)
+      const distance = getTouchDistance(e.touches[0], e.touches[1])
+      setLastPinchDistance(distance)
+      setIsPanning(true)
+      const midX = (e.touches[0].clientX + e.touches[1].clientX) / 2
+      const midY = (e.touches[0].clientY + e.touches[1].clientY) / 2
+      setPanStart({ x: midX - panX, y: midY - panY })
+    }
+  }
+
+  const handleTouchMove = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    e.preventDefault()
+    if (e.touches.length === 1) {
+      if (isDrawing) {
+        const touch = e.touches[0]
+        const coords = getCanvasCoordinates(touch.clientX, touch.clientY)
+        if (coords) drawAtCoordinates(coords.x, coords.y)
+      }
+    } else if (e.touches.length === 2) {
+      const distance = getTouchDistance(e.touches[0], e.touches[1])
+      if (lastPinchDistance) {
+        const scale = distance / lastPinchDistance
+        setZoom(prev => Math.min(Math.max(prev * scale, 0.5), 5))
+      }
+      setLastPinchDistance(distance)
+      
+      if (isPanning) {
+        const midX = (e.touches[0].clientX + e.touches[1].clientX) / 2
+        const midY = (e.touches[0].clientY + e.touches[1].clientY) / 2
+        setPanX(midX - panStart.x)
+        setPanY(midY - panStart.y)
+      }
+    }
+  }
+
+  const stopTouchDrawing = () => {
+    setIsDrawing(false)
+    setIsPanning(false)
+    setLastPinchDistance(null)
+  }
+
   const applyEdits = () => {
     if (!canvasRef.current) return
     const canvas = canvasRef.current
@@ -198,12 +267,12 @@ export default function Home() {
   }
 
   return (
-    <div style={{ fontFamily: 'system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,"Noto Sans",sans-serif', margin: 0, background: '#0b1021', color: '#e7e9ee', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', padding: '32px' }}>
-      <div style={{ width: '100%', maxWidth: '1000px', background: '#121832', border: '1px solid #1e2748', borderRadius: '16px', boxShadow: '0 10px 30px rgba(0,0,0,.35)', padding: '32px' }}>
+    <div className="main-container" style={{ fontFamily: 'system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,"Noto Sans",sans-serif', margin: 0, background: '#0b1021', color: '#e7e9ee', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', minHeight: '100dvh', padding: '32px' }}>
+      <div className="card-container" style={{ width: '100%', maxWidth: '1000px', background: '#121832', border: '1px solid #1e2748', borderRadius: '16px', boxShadow: '0 10px 30px rgba(0,0,0,.35)', padding: '32px' }}>
         <h1 style={{ fontSize: '28px', margin: '0 0 12px' }}>Remove background</h1>
         <p style={{ margin: '0 0 24px', color: '#aab3c5', fontSize: '15px' }}>Upload an image and get a transparent PNG.</p>
-        <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap' }}>
-          <div style={{ flex: 1, minWidth: '320px' }}>
+        <div className="content-wrapper" style={{ display: 'flex', gap: '24px', flexWrap: 'wrap' }}>
+          <div className="section" style={{ flex: 1, minWidth: '320px' }}>
             <form onSubmit={handleSubmit}>
               <div style={{ display: 'flex', gap: '12px', alignItems: 'stretch', flexDirection: 'column' }}>
                 <input
@@ -249,7 +318,7 @@ export default function Home() {
                     <button onClick={() => setZoom(prev => Math.min(prev + 0.25, 5))} style={{ padding: '8px 12px', border: 0, borderRadius: '6px', background: '#1e2748', color: 'white', fontWeight: 600, cursor: 'pointer', fontSize: '14px' }}>+</button>
                     <button onClick={resetZoom} style={{ padding: '8px 12px', border: 0, borderRadius: '6px', background: '#1e2748', color: 'white', fontWeight: 600, cursor: 'pointer', fontSize: '12px' }}>Reset</button>
                   </div>
-                  <p style={{ fontSize: '12px', color: '#6b7280', margin: '8px 0 0', lineHeight: '1.4' }}>💡 Hold Shift + move/scroll</p>
+                  <p style={{ fontSize: '12px', color: '#6b7280', margin: '8px 0 0', lineHeight: '1.4' }}>💡 Desktop: Hold Shift + move/scroll | Mobile: Two fingers to zoom/pan</p>
                 </div>
                 <div style={{ marginBottom: '12px' }}>
                   <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', color: '#aab3c5' }}>Brush Size: {brushSize}px</label>
@@ -283,11 +352,12 @@ export default function Home() {
               </div>
             )}
           </div>
-          <div style={{ flex: 1, minWidth: '320px' }}>
+          <div className="section" style={{ flex: 1, minWidth: '320px' }}>
             <div 
               ref={containerRef}
+              className="preview-container"
               onWheel={editMode ? handleWheel : undefined}
-              style={{ border: '1px solid #1e2748', borderRadius: '12px', overflow: 'hidden', background: '#0d1430', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '400px', position: 'relative' }}
+              style={{ border: '1px solid #1e2748', borderRadius: '12px', overflow: 'hidden', background: '#0d1430', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '400px', maxHeight: '600px', position: 'relative' }}
             >
               {editMode && result ? (
                 <div style={{ transform: `translate(${panX}px, ${panY}px) scale(${zoom})`, transformOrigin: 'center', transition: isPanning ? 'none' : 'transform 0.1s' }}>
@@ -297,13 +367,17 @@ export default function Home() {
                     onMouseMove={handleMouseMove}
                     onMouseUp={stopDrawing}
                     onMouseLeave={stopDrawing}
-                    style={{ height: 'auto', display: 'block', cursor: isPanning ? 'grabbing' : 'crosshair' }}
+                    onTouchStart={startTouchDrawing}
+                    onTouchMove={handleTouchMove}
+                    onTouchEnd={stopTouchDrawing}
+                    onTouchCancel={stopTouchDrawing}
+                    style={{ maxWidth: '100%', maxHeight: '100%', height: 'auto', width: 'auto', display: 'block', cursor: isPanning ? 'grabbing' : 'crosshair', touchAction: 'none' }}
                   />
                 </div>
               ) : result ? (
-                <img src={result} alt="Result" style={{ height: 'auto', display: 'block' }} />
+                <img src={result} alt="Result" style={{ maxWidth: '100%', maxHeight: '100%', height: 'auto', width: 'auto', display: 'block', objectFit: 'contain' }} />
               ) : preview ? (
-                <img src={preview} alt="Preview" style={{ height: 'auto', display: 'block', opacity: 0.7 }} />
+                <img src={preview} alt="Preview" style={{ maxWidth: '100%', maxHeight: '100%', height: 'auto', width: 'auto', display: 'block', opacity: 0.7, objectFit: 'contain' }} />
               ) : (
                 <span style={{ color: '#6b7280' }}>No image</span>
               )}
