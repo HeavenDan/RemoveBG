@@ -80,6 +80,14 @@ export default function RootLayout({
       <body>
         <PHProvider>{children}</PHProvider>
         <Analytics />
+        <a
+          href="https://ko-fi.com/dksheaven"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ position: 'fixed', right: '16px', bottom: '16px', zIndex: 50, padding: '10px 14px', background: '#1e2748', color: '#aab3c5', borderRadius: '999px', textDecoration: 'none', fontWeight: 700, border: '1px solid #33406b', boxShadow: '0 6px 18px rgba(0,0,0,.25)', opacity: 0.95 }}
+        >
+          ☕ Support on Ko‑fi
+        </a>
       </body>
     </html>
   )
