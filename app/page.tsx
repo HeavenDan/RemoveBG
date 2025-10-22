@@ -17,6 +17,7 @@ export default function Home() {
   const containerRef = useRef<HTMLDivElement>(null)
   const [isDrawing, setIsDrawing] = useState(false)
   const [originalImageData, setOriginalImageData] = useState<ImageData | null>(null)
+  const [sourceImageData, setSourceImageData] = useState<ImageData | null>(null)
   
   const [zoom, setZoom] = useState(1)
   const [panX, setPanX] = useState(0)
@@ -62,6 +63,7 @@ export default function Home() {
     setError('')
     setEditMode(false)
     setOriginalImageData(null)
+    setSourceImageData(null)
     setZoom(1)
     setPanX(0)
     setPanY(0)
@@ -84,21 +86,34 @@ export default function Home() {
   }
 
   useEffect(() => {
-    if (editMode && result && canvasRef.current) {
+    if (editMode && result && preview && canvasRef.current) {
       const canvas = canvasRef.current
       const ctx = canvas.getContext('2d')
       if (!ctx) return
 
-      const img = new Image()
-      img.onload = () => {
-        canvas.width = img.width
-        canvas.height = img.height
-        ctx.drawImage(img, 0, 0)
+      const resultImg = new Image()
+      resultImg.onload = () => {
+        canvas.width = resultImg.width
+        canvas.height = resultImg.height
+        ctx.drawImage(resultImg, 0, 0)
         setOriginalImageData(ctx.getImageData(0, 0, canvas.width, canvas.height))
+        
+        const sourceImg = new Image()
+        sourceImg.onload = () => {
+          const tempCanvas = document.createElement('canvas')
+          tempCanvas.width = resultImg.width
+          tempCanvas.height = resultImg.height
+          const tempCtx = tempCanvas.getContext('2d')
+          if (tempCtx) {
+            tempCtx.drawImage(sourceImg, 0, 0, tempCanvas.width, tempCanvas.height)
+            setSourceImageData(tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height))
+          }
+        }
+        sourceImg.src = preview
       }
-      img.src = result
+      resultImg.src = result
     }
-  }, [editMode, result])
+  }, [editMode, result, preview])
 
   const startDrawing = (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (e.shiftKey) {
@@ -165,12 +180,12 @@ export default function Home() {
             if (brushMode === 'erase') {
               data[index + 3] = 0
             } else {
-              if (originalImageData) {
-                const origData = originalImageData.data
-                data[index] = origData[index]
-                data[index + 1] = origData[index + 1]
-                data[index + 2] = origData[index + 2]
-                data[index + 3] = origData[index + 3]
+              if (sourceImageData) {
+                const sourceData = sourceImageData.data
+                data[index] = sourceData[index]
+                data[index + 1] = sourceData[index + 1]
+                data[index + 2] = sourceData[index + 2]
+                data[index + 3] = sourceData[index + 3]
               }
             }
           }
@@ -266,6 +281,28 @@ export default function Home() {
     setPanY(0)
   }
 
+  const handleDownload = () => {
+    if (!result) return
+    
+    fetch(result)
+      .then(res => res.blob())
+      .then(blob => {
+        const url = window.URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.style.display = 'none'
+        a.href = url
+        a.download = 'no-bg.png'
+        document.body.appendChild(a)
+        a.click()
+        window.URL.revokeObjectURL(url)
+        document.body.removeChild(a)
+      })
+      .catch(err => {
+        console.error('Download error:', err)
+        setError('Failed to download image')
+      })
+  }
+
   return (
     <div className="main-container" style={{ fontFamily: 'system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,"Noto Sans",sans-serif', margin: 0, background: '#0b1021', color: '#e7e9ee', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100dvh', padding: '32px' }}>
       <div className="card-container" style={{ width: '100%', maxWidth: '1000px', background: '#121832', border: '1px solid #1e2748', borderRadius: '16px', boxShadow: '0 10px 30px rgba(0,0,0,.35)', padding: '32px' }}>
@@ -293,9 +330,7 @@ export default function Home() {
             {result && !editMode && (
               <div style={{ display: 'flex', gap: '12px', flexDirection: 'column' }}>
                 <div style={{ display: 'flex', gap: '12px' }}>
-                  <a href={result} download="no-bg.png" style={{ textDecoration: 'none', flex: 1 }}>
-                    <button type="button" style={{ width: '100%', padding: '14px 20px', border: 0, borderRadius: '10px', background: '#4f6af7', color: 'white', fontWeight: 600, cursor: 'pointer', fontSize: '15px' }}>Download PNG</button>
-                  </a>
+                  <button onClick={handleDownload} type="button" style={{ flex: 1, padding: '14px 20px', border: 0, borderRadius: '10px', background: '#4f6af7', color: 'white', fontWeight: 600, cursor: 'pointer', fontSize: '15px' }}>Download PNG</button>
                   <button onClick={handleReset} type="button" style={{ padding: '14px 20px', border: 0, borderRadius: '10px', background: '#4f6af7', color: 'white', fontWeight: 600, cursor: 'pointer', fontSize: '15px' }}>Reset</button>
                 </div>
                 <button onClick={() => setEditMode(true)} type="button" style={{ width: '100%', padding: '14px 20px', border: 0, borderRadius: '10px', background: '#10b981', color: 'white', fontWeight: 600, cursor: 'pointer', fontSize: '15px' }}>✏️ Edit with Brush</button>
@@ -344,7 +379,7 @@ export default function Home() {
                     onClick={() => setBrushMode('restore')}
                     style={{ flex: 1, padding: '10px', border: 0, borderRadius: '8px', background: brushMode === 'restore' ? '#10b981' : '#1e2748', color: 'white', fontWeight: 600, cursor: 'pointer', fontSize: '14px' }}
                   >
-                    ↩️ Undo Erase
+                    ✨ Restore
                   </button>
                 </div>
                 <div style={{ display: 'flex', gap: '8px' }}>
