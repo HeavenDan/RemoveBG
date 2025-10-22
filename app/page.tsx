@@ -343,89 +343,90 @@ export default function Home() {
         <p style={{ margin: '0 0 24px', color: '#aab3c5', fontSize: '15px' }}>Upload an image and get a transparent PNG.</p>
         <div className="content-wrapper" style={{ display: 'flex', gap: '24px', flexWrap: 'wrap' }}>
           <div className="section" style={{ flex: 1, minWidth: '320px' }}>
-            {!result && (
-              <form onSubmit={handleSubmit}>
-                <div style={{ display: 'flex', gap: '12px', alignItems: 'stretch', flexDirection: 'column' }}>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileChange}
-                    style={{ padding: '12px', border: '1px dashed #33406b', borderRadius: '10px', background: '#0d1430', color: '#e7e9ee', fontSize: '14px' }}
-                  />
-                  <button type="submit" disabled={loading || editMode} style={{ padding: '14px 20px', border: 0, borderRadius: '10px', background: '#4f6af7', color: 'white', fontWeight: 600, cursor: (loading || editMode) ? 'not-allowed' : 'pointer', opacity: (loading || editMode) ? 0.6 : 1, fontSize: '15px' }}>
-                    {loading ? 'Processing...' : 'Remove'}
-                  </button>
-                </div>
-              </form>
-            )}
-            {error && <div style={{ color: '#ff6b6b', marginTop: '16px', fontSize: '14px' }}>{error}</div>}
-            {!result && (
-              <div style={{ marginTop: '24px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+              <div style={{ flex: '1 1 auto' }}>
+                {!result && (
+                  <form onSubmit={handleSubmit}>
+                    <div style={{ display: 'flex', gap: '12px', alignItems: 'stretch', flexDirection: 'column' }}>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileChange}
+                        style={{ padding: '12px', border: '1px dashed #33406b', borderRadius: '10px', background: '#0d1430', color: '#e7e9ee', fontSize: '14px' }}
+                      />
+                      <button type="submit" disabled={loading || editMode} style={{ padding: '14px 20px', border: 0, borderRadius: '10px', background: '#4f6af7', color: 'white', fontWeight: 600, cursor: (loading || editMode) ? 'not-allowed' : 'pointer', opacity: (loading || editMode) ? 0.6 : 1, fontSize: '15px' }}>
+                        {loading ? 'Processing...' : 'Remove'}
+                      </button>
+                    </div>
+                  </form>
+                )}
+                {error && <div style={{ color: '#ff6b6b', marginTop: '16px', fontSize: '14px' }}>{error}</div>}
+                {result && !editMode && (
+                  <div style={{ display: 'flex', gap: '12px', flexDirection: 'column' }}>
+                    <div style={{ display: 'flex', gap: '12px' }}>
+                      <button onClick={handleDownload} type="button" style={{ flex: 1, padding: '14px 20px', border: 0, borderRadius: '10px', background: '#4f6af7', color: 'white', fontWeight: 600, cursor: 'pointer', fontSize: '15px' }}>Download PNG</button>
+                      <button onClick={handleReset} type="button" style={{ padding: '14px 20px', border: 0, borderRadius: '10px', background: '#4f6af7', color: 'white', fontWeight: 600, cursor: 'pointer', fontSize: '15px' }}>Reset</button>
+                    </div>
+                    <button onClick={() => setEditMode(true)} type="button" style={{ width: '100%', padding: '14px 20px', border: 0, borderRadius: '10px', background: '#10b981', color: 'white', fontWeight: 600, cursor: 'pointer', fontSize: '15px' }}>✏️ Edit with Brush</button>
+                  </div>
+                )}
+
+                {editMode && (
+                  <div style={{ padding: '16px', background: '#0d1430', borderRadius: '10px', border: '1px solid #1e2748' }}>
+                    <div style={{ marginBottom: '12px' }}>
+                      <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', color: '#aab3c5' }}>Zoom: {zoom.toFixed(1)}x</label>
+                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                        <button onClick={() => setZoom(prev => Math.max(prev - 0.25, 0.5))} style={{ padding: '8px 12px', border: 0, borderRadius: '6px', background: '#1e2748', color: 'white', fontWeight: 600, cursor: 'pointer', fontSize: '14px' }}>−</button>
+                        <input
+                          type="range"
+                          min="0.5"
+                          max="5"
+                          step="0.1"
+                          value={zoom}
+                          onChange={(e) => setZoom(Number(e.target.value))}
+                          style={{ flex: 1 }}
+                        />
+                        <button onClick={() => setZoom(prev => Math.min(prev + 0.25, 5))} style={{ padding: '8px 12px', border: 0, borderRadius: '6px', background: '#1e2748', color: 'white', fontWeight: 600, cursor: 'pointer', fontSize: '14px' }}>+</button>
+                        <button onClick={resetZoom} style={{ padding: '8px 12px', border: 0, borderRadius: '6px', background: '#1e2748', color: 'white', fontWeight: 600, cursor: 'pointer', fontSize: '12px' }}>Reset</button>
+                      </div>
+                      <p style={{ fontSize: '12px', color: '#6b7280', margin: '8px 0 0', lineHeight: '1.4' }}>💡 Desktop: Hold Shift + move/scroll | Mobile: Two fingers to zoom/pan</p>
+                    </div>
+                    <div style={{ marginBottom: '12px' }}>
+                      <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', color: '#aab3c5' }}>Brush Size: {brushSize}px</label>
+                      <input
+                        type="range"
+                        min="5"
+                        max="50"
+                        value={brushSize}
+                        onChange={(e) => setBrushSize(Number(e.target.value))}
+                        style={{ width: '100%' }}
+                      />
+                    </div>
+                    <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+                      <button
+                        onClick={() => setBrushMode('erase')}
+                        style={{ flex: 1, padding: '10px', border: 0, borderRadius: '8px', background: brushMode === 'erase' ? '#ef4444' : '#1e2748', color: 'white', fontWeight: 600, cursor: 'pointer', fontSize: '14px' }}
+                      >
+                        🗑️ Erase
+                      </button>
+                      <button
+                        onClick={() => setBrushMode('restore')}
+                        style={{ flex: 1, padding: '10px', border: 0, borderRadius: '8px', background: brushMode === 'restore' ? '#10b981' : '#1e2748', color: 'white', fontWeight: 600, cursor: 'pointer', fontSize: '14px' }}
+                      >
+                        ✨ Restore
+                      </button>
+                    </div>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <button onClick={applyEdits} type="button" style={{ flex: 1, padding: '12px', border: 0, borderRadius: '8px', background: '#10b981', color: 'white', fontWeight: 600, cursor: 'pointer', fontSize: '14px' }}>✓ Apply</button>
+                      <button onClick={cancelEdits} type="button" style={{ flex: 1, padding: '12px', border: 0, borderRadius: '8px', background: '#6b7280', color: 'white', fontWeight: 600, cursor: 'pointer', fontSize: '14px' }}>✕ Cancel</button>
+                    </div>
+                  </div>
+                )}
+              </div>
+              <div style={{ marginTop: 'auto' }}>
                 <KoFiInlineButton />
               </div>
-            )}
-            
-            {result && !editMode && (
-              <div style={{ display: 'flex', gap: '12px', flexDirection: 'column' }}>
-                <div style={{ display: 'flex', gap: '12px' }}>
-                  <button onClick={handleDownload} type="button" style={{ flex: 1, padding: '14px 20px', border: 0, borderRadius: '10px', background: '#4f6af7', color: 'white', fontWeight: 600, cursor: 'pointer', fontSize: '15px' }}>Download PNG</button>
-                  <button onClick={handleReset} type="button" style={{ padding: '14px 20px', border: 0, borderRadius: '10px', background: '#4f6af7', color: 'white', fontWeight: 600, cursor: 'pointer', fontSize: '15px' }}>Reset</button>
-                </div>
-                <button onClick={() => setEditMode(true)} type="button" style={{ width: '100%', padding: '14px 20px', border: 0, borderRadius: '10px', background: '#10b981', color: 'white', fontWeight: 600, cursor: 'pointer', fontSize: '15px' }}>✏️ Edit with Brush</button>
-              </div>
-            )}
-
-            {editMode && (
-              <div style={{ padding: '16px', background: '#0d1430', borderRadius: '10px', border: '1px solid #1e2748' }}>
-                <div style={{ marginBottom: '12px' }}>
-                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', color: '#aab3c5' }}>Zoom: {zoom.toFixed(1)}x</label>
-                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                    <button onClick={() => setZoom(prev => Math.max(prev - 0.25, 0.5))} style={{ padding: '8px 12px', border: 0, borderRadius: '6px', background: '#1e2748', color: 'white', fontWeight: 600, cursor: 'pointer', fontSize: '14px' }}>−</button>
-                    <input
-                      type="range"
-                      min="0.5"
-                      max="5"
-                      step="0.1"
-                      value={zoom}
-                      onChange={(e) => setZoom(Number(e.target.value))}
-                      style={{ flex: 1 }}
-                    />
-                    <button onClick={() => setZoom(prev => Math.min(prev + 0.25, 5))} style={{ padding: '8px 12px', border: 0, borderRadius: '6px', background: '#1e2748', color: 'white', fontWeight: 600, cursor: 'pointer', fontSize: '14px' }}>+</button>
-                    <button onClick={resetZoom} style={{ padding: '8px 12px', border: 0, borderRadius: '6px', background: '#1e2748', color: 'white', fontWeight: 600, cursor: 'pointer', fontSize: '12px' }}>Reset</button>
-                  </div>
-                  <p style={{ fontSize: '12px', color: '#6b7280', margin: '8px 0 0', lineHeight: '1.4' }}>💡 Desktop: Hold Shift + move/scroll | Mobile: Two fingers to zoom/pan</p>
-                </div>
-                <div style={{ marginBottom: '12px' }}>
-                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', color: '#aab3c5' }}>Brush Size: {brushSize}px</label>
-                  <input
-                    type="range"
-                    min="5"
-                    max="50"
-                    value={brushSize}
-                    onChange={(e) => setBrushSize(Number(e.target.value))}
-                    style={{ width: '100%' }}
-                  />
-                </div>
-                <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
-                  <button
-                    onClick={() => setBrushMode('erase')}
-                    style={{ flex: 1, padding: '10px', border: 0, borderRadius: '8px', background: brushMode === 'erase' ? '#ef4444' : '#1e2748', color: 'white', fontWeight: 600, cursor: 'pointer', fontSize: '14px' }}
-                  >
-                    🗑️ Erase
-                  </button>
-                  <button
-                    onClick={() => setBrushMode('restore')}
-                    style={{ flex: 1, padding: '10px', border: 0, borderRadius: '8px', background: brushMode === 'restore' ? '#10b981' : '#1e2748', color: 'white', fontWeight: 600, cursor: 'pointer', fontSize: '14px' }}
-                  >
-                    ✨ Restore
-                  </button>
-                </div>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <button onClick={applyEdits} type="button" style={{ flex: 1, padding: '12px', border: 0, borderRadius: '8px', background: '#10b981', color: 'white', fontWeight: 600, cursor: 'pointer', fontSize: '14px' }}>✓ Apply</button>
-                  <button onClick={cancelEdits} type="button" style={{ flex: 1, padding: '12px', border: 0, borderRadius: '8px', background: '#6b7280', color: 'white', fontWeight: 600, cursor: 'pointer', fontSize: '14px' }}>✕ Cancel</button>
-                </div>
-              </div>
-            )}
+            </div>
           </div>
           <div className="section" style={{ flex: 1, minWidth: '320px' }}>
             <div 

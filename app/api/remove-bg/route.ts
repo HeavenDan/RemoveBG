@@ -41,7 +41,28 @@ export async function POST(req: NextRequest) {
     if (!r.ok) {
       const text = await r.text()
       phCapture(deviceId, 'api_call_failed', { provider: 'removebg', status: r.status, duration_ms: duration })
-      return NextResponse.json({ error: 'Upstream error', detail: text }, { status: 502 })
+      let userMessage = "We couldn't process this image. Please try a different photo."
+      let status = 502
+      try {
+        const data = JSON.parse(text)
+        const first = (data && (data.errors?.[0] || data.error)) || null
+        const code = first?.code
+        const title = first?.title || data?.error || ''
+        if (code === 'unknown_foreground') {
+          userMessage = 'Could not detect a subject. Use a photo with a clear subject and contrasting background.'
+          status = 400
+        } else if (code === 'file_too_large') {
+          userMessage = 'File is too large. Please upload a smaller image.'
+          status = 400
+        } else if (code === 'usage_limit_exceeded') {
+          userMessage = 'API usage limit reached. Please try again later.'
+          status = 429
+        } else if (typeof title === 'string' && title.trim()) {
+          userMessage = title
+          status = 400
+        }
+      } catch {}
+      return NextResponse.json({ error: userMessage }, { status })
     }
 
     const buf = Buffer.from(await r.arrayBuffer())
