@@ -11,7 +11,6 @@ export const viewport = {
 }
 
 import PHProvider from './ph-provider'
-import KoFiButton from './components/KoFiButton'
 import { Analytics } from '@vercel/analytics/react'
 
 export default function RootLayout({
@@ -81,7 +80,6 @@ export default function RootLayout({
       <body>
         <PHProvider>{children}</PHProvider>
         <Analytics />
-        <KoFiButton />
       </body>
     </html>
   )

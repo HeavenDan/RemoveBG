@@ -2,6 +2,7 @@
 
 import { useState, FormEvent, useRef, useEffect } from 'react'
 import posthog from 'posthog-js'
+import KoFiInlineButton from './components/KoFiInlineButton'
 
 export default function Home() {
   const [file, setFile] = useState<File | null>(null)
@@ -358,6 +359,11 @@ export default function Home() {
               </form>
             )}
             {error && <div style={{ color: '#ff6b6b', marginTop: '16px', fontSize: '14px' }}>{error}</div>}
+            {!result && (
+              <div style={{ marginTop: '24px' }}>
+                <KoFiInlineButton />
+              </div>
+            )}
             
             {result && !editMode && (
               <div style={{ display: 'flex', gap: '12px', flexDirection: 'column' }}>
